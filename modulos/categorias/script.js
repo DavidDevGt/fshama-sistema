@@ -13,7 +13,6 @@ const cargarCategorias = () => {
     console.log("Cargando categorías...");
 
     $.post('modulos/categorias/ajax.php', { fnc: 'mostrar_categorias' }, (data) => {
-        console.log("Respuesta recibida:", data);
         
         const respuesta = data.split("|");
         let html = '';
@@ -65,13 +64,20 @@ const agregarCategoria = () => {
         if (respuesta[0] == '1') {
             $('#agregarModal').modal('hide');
             cargarCategorias();
-            bootbox.alert('Categoría agregada correctamente');
+            Swal.fire({
+            title: '¡Éxito!',
+            text: 'Categoría agregada correctamente',
+            icon: 'success',
+            timer: 1000, // Configura el tiempo en milisegundos (1 segundo en este caso)
+            timerProgressBar: true,
+            showConfirmButton: false
+        });
 
             // Aquí reseteamos el formulario
             $('#nombreCategoria').val('');
             $('#descripcionCategoria').val('');
         } else {
-            bootbox.alert(respuesta[1]);
+             Swal.fire('Error', respuesta[1], 'error');
         }
     });
 }
@@ -92,29 +98,57 @@ const editarCategoria = () => {
         if (respuesta[0] == '1') {
             modalEditar.modal('hide');
             cargarCategorias();
-            bootbox.alert('Categoría actualizada correctamente');
+            Swal.fire({
+            title: '¡Éxito!',
+            text: 'Categoría actualizada correctamente',
+            icon: 'success',
+            timer: 1000, // Configura el tiempo en milisegundos (1 segundo en este caso)
+            timerProgressBar: true,
+            showConfirmButton: false
+        });
         } else {
-            bootbox.alert(respuesta[1]);
+            Swal.fire('Error', respuesta[1], 'error');
         }
     });
 }
 
 // Función para eliminar una categoría
 const eliminarCategoria = (idCategoria) => {
-    if (confirm('¿Está seguro de que desea eliminar esta categoría?')) {
-        $.post('modulos/categorias/ajax.php', {
-            fnc: 'eliminar_categoria',
-            idCategoria
-        }, (data) => {
-            const respuesta = data.split("|");
-            if (respuesta[0] == '1') {
-                cargarCategorias();
-                    bootbox.alert('Categoría eliminada correctamente');
-            } else {
-                    bootbox.alert(respuesta[1]);
-            }
-        });
-    }
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "¿Deseas eliminar esta categoría?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, eliminar',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Aquí va el código para eliminar la categoría
+            $.post('modulos/categorias/ajax.php', {
+                fnc: 'eliminar_categoria',
+                idCategoria
+            }, (data) => {
+                const respuesta = data.split("|");
+                if (respuesta[0] == '1') {
+                    cargarCategorias();
+                    
+                    Swal.fire({
+                    title: '¡Eliminado!',
+                    text: 'La categoría ha sido eliminada.',
+                    icon: 'success',
+                    timer: 1000, // Configura el tiempo en milisegundos (1 segundo en este caso)
+                    timerProgressBar: true,
+                    showConfirmButton: false
+                });
+
+                } else {
+                    Swal.fire('Error', respuesta[1], 'error');
+                }
+            });
+        }
+    })
 }
 
 // Eventos
