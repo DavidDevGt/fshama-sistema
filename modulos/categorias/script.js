@@ -27,12 +27,14 @@ const cargarCategorias = () => {
                     <td width="5%">${categoria.id_categoria}</td>
                     <td width="auto">${categoria.nombre_categoria}</td>
                     <td width="20%">
-                        <button class="btn btn-primary" data-toggle="modal" data-target="#editarModal" data-id="${categoria.id_categoria}" data-nombre="${categoria.nombre_categoria}" data-descripcion="${categoria.descripcion}">
+                        <div class="btn-group">
+                        <button class="btn btn-success btn-sm" data-toggle="modal" data-target="#editarModal" data-id="${categoria.id_categoria}" data-nombre="${categoria.nombre_categoria}" data-descripcion="${categoria.descripcion}">
                             <i class="fas fa-edit"></i> Editar
                         </button>
-                        <button class="btn btn-danger" onclick="eliminarCategoria(${categoria.id_categoria})">
+                        <button class="btn btn-danger btn-sm" onclick="eliminarCategoria(${categoria.id_categoria})">
                             <i class="fas fa-trash"></i> Eliminar
                         </button>
+                        </div>
                     </td>
                 </tr>`;
             });

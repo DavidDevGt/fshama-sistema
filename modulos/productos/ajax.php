@@ -20,7 +20,7 @@ if (isset($_POST['fnc'])) {
             $active = $_POST['active'];
 
             $query = "INSERT INTO productos (nombre_producto, descripcion, id_categoria, precio_compra, precio_venta, stock_actual, unidad_medida, active) VALUES ('$nombre', '$descripcion', $id_categoria, $precio_compra, $precio_venta, $stock_actual, '$unidad_medida', $active)";
-            
+
             if (dbQuery($query)) {
                 echo '1|Producto agregado correctamente';
             } else {
@@ -142,4 +142,3 @@ if (isset($_POST['fnc'])) {
             break;
     }
 }
-?>

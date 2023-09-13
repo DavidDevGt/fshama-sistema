@@ -1,8 +1,7 @@
 <style type="text/css">
     .nombre-producto {
-        width: 200px; /* O el ancho que prefieras */
+        width: 200px;
     }
-
 </style>
 
 <!-- Vista general de productos -->
@@ -98,7 +97,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" id="btnGuardarProducto">Guardar</button>
+                <button type="button" class="btn btn-success" id="btnGuardarProducto">Guardar</button>
             </div>
         </div>
     </div>
