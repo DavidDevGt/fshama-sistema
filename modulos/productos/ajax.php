@@ -40,7 +40,7 @@ if (isset($_POST['fnc'])) {
             $active = $_POST['active'];
 
             $query = "UPDATE productos SET nombre_producto='$nombre', descripcion='$descripcion', id_categoria=$id_categoria, precio_compra=$precio_compra, precio_venta=$precio_venta, stock_actual=$stock_actual, unidad_medida='$unidad_medida', active=$active WHERE id_producto=$id";
-            
+
             if (dbQuery($query)) {
                 echo '1|Producto actualizado correctamente';
             } else {
@@ -52,7 +52,7 @@ if (isset($_POST['fnc'])) {
             $id = $_POST['id_producto'];
 
             $query = "DELETE FROM productos WHERE id_producto=$id";
-            
+
             if (dbQuery($query)) {
                 echo '1|Producto eliminado correctamente';
             } else {
@@ -61,9 +61,11 @@ if (isset($_POST['fnc'])) {
             break;
 
         case "mostrar_productos":
-            $query = "SELECT * FROM productos ORDER BY id_producto";
+            $query = "SELECT p.*, c.nombre_categoria AS nombre_categoria FROM productos p
+            LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
+            ORDER BY p.id_producto";
             $result = dbQuery($query);
-            
+
             if (mysqli_num_rows($result) > 0) {
                 $productos = array();
                 while ($row = dbFetchAssoc($result)) {
@@ -79,7 +81,7 @@ if (isset($_POST['fnc'])) {
             $id = $_POST['id_producto'];
             $query = "SELECT * FROM productos WHERE id_producto=$id";
             $result = dbQuery($query);
-            
+
             if (mysqli_num_rows($result) > 0) {
                 $producto = dbFetchAssoc($result);
                 echo '1|' . json_encode($producto);
@@ -89,7 +91,7 @@ if (isset($_POST['fnc'])) {
             break;
 
         case "mostrar_categorias":
-            $query = "SELECT * FROM categorias ORDER BY id_categoria"; 
+            $query = "SELECT * FROM categorias ORDER BY id_categoria";
             $result = dbQuery($query);
 
             if (mysqli_num_rows($result) > 0) {
@@ -105,7 +107,7 @@ if (isset($_POST['fnc'])) {
             break;
 
         case "mostrar_unidades_medida":
-            $query = "SHOW COLUMNS FROM productos WHERE Field = 'unidad_medida'"; 
+            $query = "SHOW COLUMNS FROM productos WHERE Field = 'unidad_medida'";
             $result = dbQuery($query);
 
             if (mysqli_num_rows($result) > 0) {
@@ -123,7 +125,7 @@ if (isset($_POST['fnc'])) {
             $consulta = $_POST['consulta'];
             $query = "SELECT * FROM productos WHERE nombre_producto LIKE '%$consulta%'";
             $result = dbQuery($query);
-            
+
             if (mysqli_num_rows($result) > 0) {
                 $productos = array();
                 while ($row = dbFetchAssoc($result)) {
@@ -135,7 +137,7 @@ if (isset($_POST['fnc'])) {
             }
             break;
 
-        // ... otros casos ...
+            // ... otros casos ...
 
         default:
             echo '0|Función no reconocida.';

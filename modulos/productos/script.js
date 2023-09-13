@@ -34,12 +34,17 @@ const cargarProductos = (consulta = "") => {
             ? producto.descripcion.substring(0, 8) + "..."
             : producto.descripcion;
 
+        const categoriaResumida =
+          producto.nombre_categoria.length > 10
+            ? producto.nombre_categoria.substring(0, 8) + "..."
+            : producto.nombre_categoria;
+
         html += `
                 <tr>
                     <td>${producto.id_producto}</td>
                     <td class="nombre-producto">${producto.nombre_producto}</td>
                     <td>${descripcionResumida}</td>
-                    <td>${producto.id_categoria}</td>
+                    <td>${categoriaResumida}</td>
                     <td>${formatoMonedaGTQ(producto.precio_compra)}</td>
                     <td>${formatoMonedaGTQ(producto.precio_venta)}</td>
                     <td>${producto.stock_actual}</td>
