@@ -22,6 +22,7 @@ const cargarProductos = (consulta = "") => {
   }
 
   $.post("modulos/productos/ajax.php", data, (data) => {
+    console.log(data);
     const respuesta = data.split("|");
     let html = "";
 
@@ -30,12 +31,12 @@ const cargarProductos = (consulta = "") => {
 
       productos.forEach((producto) => {
         const descripcionResumida =
-          producto.descripcion.length > 10
+          producto.descripcion && producto.descripcion.length > 10
             ? producto.descripcion.substring(0, 8) + "..."
             : producto.descripcion;
 
         const categoriaResumida =
-          producto.nombre_categoria.length > 10
+          producto.nombre_categoria && producto.nombre_categoria.length > 10
             ? producto.nombre_categoria.substring(0, 8) + "..."
             : producto.nombre_categoria;
 

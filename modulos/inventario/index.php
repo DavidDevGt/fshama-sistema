@@ -100,27 +100,4 @@
     </div>
 </div>
 
-
-<!-- Modal para consultar producto -->
-<div class="modal fade" id="consultaProductoModal" tabindex="-1" aria-labelledby="consultaProductoModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="consultaProductoModalLabel">Consultar Producto</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <strong>Nombre del Producto:</strong> <span id="nombreProductoConsulta"></span><br>
-                <strong>Descripción:</strong> <span id="descripcionProductoConsulta"></span><br>
-                <strong>Stock Actual:</strong> <span id="stockProductoConsulta"></span>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script src="modulos/inventario/script.js"></script>

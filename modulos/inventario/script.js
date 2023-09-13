@@ -191,23 +191,3 @@ const agregarSalida = () => {
     }
   );
 };
-
-$(document).ready(() => {
-  cargarMovimientosInventario();
-
-  // Inicializar los selects con un prompt
-  $("#buscarYSeleccionarProductoEntrada").html(
-    '<option value="">Escriba para buscar...</option>'
-  );
-  $("#buscarYSeleccionarProductoSalida").html(
-    '<option value="">Escriba para buscar...</option>'
-  );
-
-  $("#buscarYSeleccionarProductoEntrada").on("input", function () {
-    buscarProducto($(this).val(), "entrada");
-  });
-
-  $("#buscarYSeleccionarProductoSalida").on("input", function () {
-    buscarProducto($(this).val(), "salida");
-  });
-});
