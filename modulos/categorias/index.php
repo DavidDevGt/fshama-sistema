@@ -1,19 +1,4 @@
-<style type="text/css">
-    .table-rounded {
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-    }
 
-    .table-rounded thead th {
-        background-color: #707bff;  /* Color azul de Bootstrap */
-        color: white;
-    }
-
-    .table-rounded tbody tr:hover {
-        background-color: #d4e4ff;  /* Un color de fondo ligero cuando se pasa el ratón por encima */
-    }
-</style>
 
 <div class="container mt-5">
         <h1>Administrar Categorías</h1>
@@ -23,7 +8,7 @@
         </button>
 
         <!-- Tabla para mostrar las categorías -->
-        <table class="table table-primary table-hover mt-5 table-rounded" id="tablaCategorias">
+        <table class="table table-warning table-hover mt-5 table-rounded" id="tablaCategorias">
             <thead>
                 <tr>
                     <th>ID</th>

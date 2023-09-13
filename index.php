@@ -52,7 +52,7 @@ if (!isset($_GET['modulo'])) {
 
     echo '<div class="contenedor-central">';
 
-    $modulos = ['productos', 'ventas', 'compras', 'proveedores', 'categorias'];
+    $modulos = ['productos', 'ventas', 'compras', 'proveedores', 'categorias', 'inventario'];
     foreach ($modulos as $modulo) {
         echo '<a href="?modulo=' . $modulo . '" class="acceso-directo">';
         echo '<img src="assets/img/' . $modulo . '.png" alt="' . ucfirst($modulo) . '">'; // Asumiendo que hay imágenes correspondientes en la carpeta img
