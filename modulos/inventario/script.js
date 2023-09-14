@@ -1,193 +1,124 @@
 "use strict";
 
-const cargarMovimientosInventario = () => {
+$(document).ready(() => {
+  cargarInventario();
+  cargarEstadisticas();
+});
+
+const cargarInventario = () => {
   $.post(
     "modulos/inventario/ajax.php",
-    { fnc: "mostrar_entradas_salidas" },
-    (data) => {
-      const respuesta = data.split("|");
+    { fnc: "obtenerProductosConMovimientos" },
+    (respuesta) => {
+      const productos = JSON.parse(respuesta);
       let html = "";
 
-      if (respuesta[0] === "1") {
-        const movimientos = JSON.parse(respuesta[1]);
+      productos.forEach((producto) => {
+        const entradas = producto.movimientos
+          .filter((m) => m.tipo_movimiento === "Entrada")
+          .reduce((acc, movimiento) => acc + movimiento.cantidad, 0);
+        const salidas = producto.movimientos
+          .filter((m) => m.tipo_movimiento === "Salida")
+          .reduce((acc, movimiento) => acc + movimiento.cantidad, 0);
 
-        movimientos.forEach((movimiento) => {
-          html += `
-                <tr>
-                    <td>${movimiento.id_inventario}</td>
-                    <td>${movimiento.id_producto}</td>
-                    <td>${movimiento.fecha}</td>
-                    <td>${movimiento.tipo_movimiento}</td>
-                    <td>${movimiento.cantidad}</td>
-                    <td>${movimiento.motivo}</td>
-                    <td>
-                        <!-- Aquí puedes agregar botones para editar o eliminar el movimiento si lo consideras necesario -->
-                    </td>
-                </tr>`;
-        });
-      } else {
-        html =
-          '<tr><td colspan="7">No hay movimientos registrados en el inventario.</td></tr>';
-      }
+        html += `
+              <tr>
+                  <td>${producto.nombre}</td>
+                  <td>${producto.stock_inicial}</td>
+                  <td>${entradas}</td>
+                  <td>${salidas}</td>
+                  <td>${producto.stock_actual}</td>  <!-- Usar directamente el stock_actual del backend -->
+              </tr>`;
+      });
 
-      $("#listaMovimientos").html(html);
+      $("#tablaInventario").html(html);
     }
   );
 };
 
-("use strict");
+const cargarEstadisticas = () => {
+  $.post(
+    "modulos/inventario/ajax.php",
+    { fnc: "obtenerEstadisticas" },
+    (respuesta) => {
+      const stats = JSON.parse(respuesta);
+      $("#totalProductos").text(stats.totalProductos);
+      $("#movimientosRecientes").text(stats.movimientosRecientes);
+      $("#productosBajoStock").text(stats.productosBajoStock);
+      $("#ultimoMovimiento").text(stats.ultimoMovimiento);
+    }
+  );
+};
 
 $(document).ready(function () {
-  // Delegación del evento click para las filas de la tabla
-  $("#tablaResultadosBusqueda").on("click", "tr", function () {
-    const idProducto = $(this).data("id");
-    mostrarDetalleProducto(idProducto);
+  // Función para buscar un producto.
+  function buscarProducto(query) {
+    if (query.length > 2) {
+      $("#searchFeedback").removeClass("d-none").text("Buscando...");
+      $.ajax({
+        type: "POST",
+        url: "modulos/inventario/ajax.php",
+        data: {
+          fnc: "buscarProducto",
+          producto: query,
+        },
+        dataType: "json",
+        success: function (response) {
+          $("#resultadosBusqueda").empty(); // Limpiar resultados anteriores
+          if (response && response.length > 0) {
+            $("#resultadosBusqueda").removeClass("d-none");
+            response.forEach((producto) => {
+              let option = $("<option>")
+                .text(producto.nombre_producto)
+                .val(JSON.stringify(producto)); // Guardamos todo el objeto del producto como string
+              $("#resultadosBusqueda").append(option);
+            });
+          } else {
+            $("#resultadosBusqueda").addClass("d-none");
+            $("#nombreProducto").text("No encontrado");
+            $(
+              "#descripcionProducto, #existenciaProducto, #precioProducto, #categoriaProducto"
+            ).text("");
+          }
+          $("#searchFeedback").addClass("d-none");
+        },
+        error: function () {
+          $("#searchFeedback")
+            .removeClass("d-none")
+            .text("Error en la búsqueda. Intente de nuevo.");
+        },
+      });
+    } else {
+      $("#searchFeedback").addClass("d-none");
+    }
+  }
+
+  // Escuchar el evento keyup del input de búsqueda.
+  $("#busquedaProducto").on("keyup", function () {
+    let query = $(this).val();
+    buscarProducto(query);
   });
 });
 
-const buscarProducto = (nombre) => {
-  if (nombre.length >= 3) {
-    $("#tablaResultadosBusqueda").show();
-    $.post(
-      "modulos/inventario/ajax.php",
-      { fnc: "buscar_producto_por_nombre", nombre_producto: nombre },
-      (data) => {
-        const respuesta = data.split("|");
-        let html = "";
+$("#resultadosBusqueda").on("change", function () {
+  let productoSeleccionado = JSON.parse($(this).val()); // Convertimos el string a objeto
 
-        if (respuesta[0] === "1") {
-          const productos = JSON.parse(respuesta[1]);
-
-          productos.forEach((producto) => {
-            html += `<tr data-id="${producto.id_producto}">`;
-            html += `<td>${producto.nombre_producto}</td>`;
-            html += `</tr>`;
-          });
-
-          $("#tablaResultadosBusqueda").html(html);
-        } else {
-          $("#tablaResultadosBusqueda").html(
-            "<tr><td>Producto no encontrado</td></tr>"
-          );
-        }
-      }
-    );
-  } else {
-    $("#tablaResultadosBusqueda").hide();
-    $("#tablaResultadosBusqueda").html("");
-  }
-};
-
-const mostrarDetalleProducto = (idProducto) => {
-  $.post(
-    "modulos/inventario/ajax.php",
-    { fnc: "consultar_producto", id_producto: idProducto },
-    (data) => {
-      const respuesta = data.split("|");
-      let html = "";
-
-      if (respuesta[0] === "1") {
-        const producto = JSON.parse(respuesta[1]);
-
-        html += `<div class="card">
-                        <div class="card-body">
-                            <h5 class="card-title">${producto.nombre_producto}</h5>
-                            <p class="card-text">${producto.descripcion}</p>
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item"><strong>Stock Actual:</strong> ${producto.stock_actual}</li>
-                            </ul>
-                        </div>
-                    </div>`;
-
-        $("#detalleProducto").html(html);
-      } else {
-        $("#detalleProducto").html(
-          '<div class="alert alert-danger" role="alert">Producto no encontrado.</div>'
-        );
-      }
-    }
+  $("#nombreProducto").text(
+    productoSeleccionado.nombre_producto || "Desconocido"
   );
-};
-
-const limpiarCampos = () => {
-  $("#busquedaProducto").val("");
-  $("#tablaResultadosBusqueda").hide();
-  $("#tablaResultadosBusqueda").html("");
-  $("#detalleProducto").html("");
-};
-
-const seleccionarProducto = (idProducto, tipo) => {
-  if (tipo === "consulta") {
-    $.post(
-      "modulos/inventario/ajax.php",
-      { fnc: "consultar_producto", id_producto: idProducto },
-      (data) => {
-        const respuesta = data.split("|");
-        if (respuesta[0] === "1") {
-          const producto = JSON.parse(respuesta[1]);
-          $("#nombreProductoConsulta").text(producto.nombre_producto);
-          $("#descripcionProductoConsulta").text(producto.descripcion);
-          $("#stockProductoConsulta").text(producto.stock_actual);
-          $("#consultaProductoModal").modal("show");
-        }
-      }
-    );
-  } else if (tipo === "entrada" || tipo === "salida") {
-    // Guardar el id del producto en un campo oculto o en un atributo 'data' para usarlo después al agregar la entrada/salida
-    $("#idProductoSeleccionado").val(idProducto);
-  }
-};
-
-const agregarEntrada = () => {
-  const idProducto = $("#idProductoSeleccionado").val();
-  const cantidad = $("#cantidadEntrada").val();
-  const motivo = $("#motivoEntrada").val();
-
-  $.post(
-    "modulos/inventario/ajax.php",
-    {
-      fnc: "agregar_entrada_inventario",
-      id_producto: idProducto,
-      cantidad: cantidad,
-      motivo: motivo,
-    },
-    (data) => {
-      const respuesta = data.split("|");
-
-      if (respuesta[0] === "1") {
-        alert("Entrada agregada correctamente");
-        $("#agregarEntradaModal").modal("hide");
-        cargarMovimientosInventario();
-      } else {
-        alert("Error al agregar la entrada");
-      }
-    }
+  $("#descripcionProducto").text(
+    productoSeleccionado.descripcion || "Desconocido"
   );
-};
-
-const agregarSalida = () => {
-  const idProducto = $("#idProductoSeleccionado").val();
-  const cantidad = $("#cantidadSalida").val();
-  const motivo = $("#motivoSalida").val();
-
-  $.post(
-    "modulos/inventario/ajax.php",
-    {
-      fnc: "agregar_salida_inventario",
-      id_producto: idProducto,
-      cantidad: cantidad,
-      motivo: motivo,
-    },
-    (data) => {
-      const respuesta = data.split("|");
-
-      if (respuesta[0] === "1") {
-        alert("Salida agregada correctamente");
-        $("#agregarSalidaModal").modal("hide");
-        cargarMovimientosInventario();
-      } else {
-        alert("Error al agregar la salida");
-      }
-    }
+  $("#existenciaProducto").text(
+    productoSeleccionado.stock_actual || "Desconocido"
   );
-};
+  $("#precioProducto").text(productoSeleccionado.precio_venta || "Desconocido");
+  $("#categoriaProducto").text(productoSeleccionado.id_categoria || "Desconocida");
+});
+
+$("#busquedaProductoModal").on('hidden.bs.modal', function () {
+  $("#busquedaProducto").val('');  // Limpiamos el campo de búsqueda
+  $("#nombreProducto, #descripcionProducto, #existenciaProducto, #precioProducto, #categoriaProducto").text(''); // Limpiamos los detalles del producto
+  $("#resultadosBusqueda").empty().addClass('d-none');  // Limpiamos las opciones y ocultamos el select
+  $("#searchFeedback").addClass("d-none");
+});

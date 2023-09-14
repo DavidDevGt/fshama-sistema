@@ -9,108 +9,149 @@ if (isset($_POST['fnc'])) {
     $op = $_POST['fnc'];
 
     switch ($op) {
-        case "agregar_entrada_inventario":
-            $id_producto = $_POST['id_producto'];
-            $cantidad = $_POST['cantidad'];
-            $motivo = $_POST['motivo'];
-
-            $query = "INSERT INTO inventario (id_producto, tipo_movimiento, cantidad, motivo) VALUES ($id_producto, 'Entrada', $cantidad, '$motivo')";
-
-            if (dbQuery($query)) {
-                echo '1|Entrada de inventario agregada correctamente';
-            } else {
-                echo '0|Error al agregar entrada de inventario';
-            }
-            break;
-
-        case "agregar_salida_inventario":
-            $id_producto = $_POST['id_producto'];
-            $cantidad = $_POST['cantidad'];
-            $motivo = $_POST['motivo'];
-
-            $query = "INSERT INTO inventario (id_producto, tipo_movimiento, cantidad, motivo) VALUES ($id_producto, 'Salida', $cantidad, '$motivo')";
-
-            if (dbQuery($query)) {
-                echo '1|Salida de inventario agregada correctamente';
-            } else {
-                echo '0|Error al agregar salida de inventario';
-            }
-            break;
-
-        case "mostrar_entradas_salidas":
-            $query = "SELECT * FROM inventario ORDER BY fecha DESC";
+        case 'obtenerProductos':
+            $query = "SELECT * FROM inventario";
             $result = dbQuery($query);
-
-            if (mysqli_num_rows($result) > 0) {
-                $entradas_salidas = array();
+            if ($result) {
+                $productos = array();
                 while ($row = dbFetchAssoc($result)) {
-                    array_push($entradas_salidas, $row);
+                    $productos[] = $row;
                 }
-                echo '1|' . json_encode($entradas_salidas);
+                echo json_encode($productos);
             } else {
-                echo '0|No hay movimientos en el inventario registrados.';
+                echo '0|Error al obtener productos.';
             }
             break;
 
-        case "buscar_producto_por_nombre":
-            $nombre = $_POST['nombre_producto'];
-            $query = "SELECT id_producto, nombre_producto FROM productos WHERE nombre_producto LIKE '%$nombre%' LIMIT 5";
+        case 'buscarProducto':
+            $busqueda = $_POST['producto'];
+
+            // Suponiendo que quieras buscar por el nombre del producto
+            $query = "SELECT * FROM productos WHERE nombre_producto LIKE '%$busqueda%'";
+
             $result = dbQuery($query);
+            if ($result) {
+                $productos = array();
+                while ($row = dbFetchAssoc($result)) {
+                    $productos[] = $row;
+                }
 
-            $productos = array();
-            while ($row = dbFetchAssoc($result)) {
-                array_push($productos, $row);
-            }
-
-            if (count($productos) > 0) {
-                echo '1|' . json_encode($productos);
+                // Se verifica si se encontraron productos
+                if (count($productos) > 0) {
+                    echo json_encode($productos);
+                } else {
+                    echo '0|Producto no encontrado.';
+                }
             } else {
-                echo '0|Producto no encontrado.';
+                echo '0|Error en la consulta.';
             }
             break;
 
-        case "consultar_producto":
-            $id_producto = $_POST['id_producto'];
-            $query = "SELECT * FROM productos WHERE id_producto = $id_producto";
-            $result = dbQuery($query);
 
-            if ($row = dbFetchAssoc($result)) {
-                echo '1|' . json_encode($row);
-            } else {
-                echo '0|Producto no encontrado.';
-            }
-            break;
-
-        case "eliminar_registro_inventario":
-            $id_inventario = $_POST['id_inventario'];
-            $query = "DELETE FROM inventario WHERE id_inventario = $id_inventario";
-
-            if (dbQuery($query)) {
-                echo '1|Registro de inventario eliminado correctamente';
-            } else {
-                echo '0|Error al eliminar el registro de inventario';
-            }
-            break;
-
-        case "actualizar_registro_inventario":
-            $id_inventario = $_POST['id_inventario'];
+        case 'agregarEntrada':
             $id_producto = $_POST['id_producto'];
             $cantidad = $_POST['cantidad'];
             $motivo = $_POST['motivo'];
-            $tipo_movimiento = $_POST['tipo_movimiento'];
-
-            $query = "UPDATE inventario SET id_producto=$id_producto, tipo_movimiento='$tipo_movimiento', cantidad=$cantidad, motivo='$motivo' WHERE id_inventario=$id_inventario";
-
+            $query = "INSERT INTO inventario (id_producto, fecha, tipo_movimiento, cantidad, motivo) VALUES ('$id_producto', NOW(), 'Entrada', '$cantidad', '$motivo')";
             if (dbQuery($query)) {
-                echo '1|Registro de inventario actualizado correctamente';
+                echo '1|Entrada agregada correctamente.';
             } else {
-                echo '0|Error al actualizar el registro de inventario';
+                echo '0|Error al agregar entrada.';
             }
             break;
 
+        case 'agregarSalida':
+            $id_producto = $_POST['id_producto'];
+            $cantidad = $_POST['cantidad'];
+            $motivo = $_POST['motivo'];
+            $query = "INSERT INTO inventario (id_producto, fecha, tipo_movimiento, cantidad, motivo) VALUES ('$id_producto', NOW(), 'Salida', '$cantidad', '$motivo')";
+            if (dbQuery($query)) {
+                echo '1|Salida agregada correctamente.';
+            } else {
+                echo '0|Error al agregar salida.';
+            }
+            break;
+
+        case 'obtenerProductosConMovimientos':
+            $productos = obtenerProductosConMovimientos();
+            echo json_encode($productos);
+            break;
+
+
+        case "obtenerEstadisticas":
+            echo json_encode(obtenerEstadisticas());
+            break;
+
+            // Aquí podrías agregar más casos de uso según las necesidades de tu aplicación.
 
         default:
             echo '0|Función no reconocida.';
             break;
     }
+}
+
+function obtenerProductosConMovimientos()
+{
+    // Consulta todos los productos y su stock inicial
+    $query = "SELECT id_producto, nombre_producto AS nombre, stock_actual FROM productos";
+    $result = dbQuery($query);
+
+    $productos = [];
+    while ($row = dbFetchAssoc($result)) {
+        $productos[$row['id_producto']] = [
+            'id_producto' => $row['id_producto'],
+            'nombre' => $row['nombre'],
+            'stock_inicial' => $row['stock_actual'],  // Asumimos que el stock_actual es el stock inicial
+            'stock_actual' => $row['stock_actual'],
+            'movimientos' => []
+        ];
+    }
+
+    // Consulta todos los movimientos
+    $queryMovimientos = "SELECT id_producto, tipo_movimiento, cantidad FROM inventario";
+    $resultMovimientos = dbQuery($queryMovimientos);
+
+    while ($rowMovimiento = dbFetchAssoc($resultMovimientos)) {
+        $idProducto = $rowMovimiento['id_producto'];
+        if (isset($productos[$idProducto])) {
+            if ($rowMovimiento['tipo_movimiento'] == 'Entrada') {
+                $productos[$idProducto]['stock_actual'] += $rowMovimiento['cantidad'];
+            } else {
+                $productos[$idProducto]['stock_actual'] -= $rowMovimiento['cantidad'];
+            }
+
+            $productos[$idProducto]['movimientos'][] = [
+                'tipo_movimiento' => $rowMovimiento['tipo_movimiento'],
+                'cantidad' => $rowMovimiento['cantidad']
+            ];
+        }
+    }
+
+    return array_values($productos);
+}
+
+function obtenerEstadisticas()
+{
+    // Total de productos
+    $query = "SELECT COUNT(*) as totalProductos FROM productos";
+    $result = dbQuery($query);
+    $stats['totalProductos'] = dbFetchAssoc($result)['totalProductos'];
+
+    // Productos bajo stock (ejemplo: menos de 5)
+    $query = "SELECT COUNT(*) as productosBajoStock FROM productos WHERE stock_actual < 5";
+    $result = dbQuery($query);
+    $stats['productosBajoStock'] = dbFetchAssoc($result)['productosBajoStock'];
+
+    // Último movimiento
+    $query = "SELECT tipo_movimiento FROM inventario ORDER BY fecha DESC LIMIT 1";
+    $result = dbQuery($query);
+    $ultimoMov = dbFetchAssoc($result);
+    $stats['ultimoMovimiento'] = $ultimoMov ? $ultimoMov['tipo_movimiento'] : 'Ninguno';
+
+    // Movimientos en los últimos 7 días
+    $query = "SELECT COUNT(*) as movimientosRecientes FROM inventario WHERE fecha >= CURDATE() - INTERVAL 7 DAY";
+    $result = dbQuery($query);
+    $stats['movimientosRecientes'] = dbFetchAssoc($result)['movimientosRecientes'];
+
+    return $stats;
 }

@@ -19,7 +19,7 @@
     </button>
 
     <!-- Tabla de productos -->
-    <table class="table table-warning table-bordered table-striped table-hover">
+    <table class="table table-warning table-bordered table-hover">
         <thead>
             <tr>
                 <th>ID</th>

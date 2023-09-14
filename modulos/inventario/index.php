@@ -1,103 +1,185 @@
+<link rel="stylesheet" href="modulos/inventario/style.css">
+
 <div class="container mt-5">
+    <!-- Título -->
     <h1 class="mb-4">Gestión de Inventario</h1>
 
-    <!-- Barra de búsqueda y filtrado -->
-    <div class="row mb-4">
-        <div class="col-md-9"> <!-- Ocupará 3/4 del espacio disponible -->
-            <div class="input-group mb-3">
-                <input type="text" id="busquedaProducto" placeholder="Buscar producto para consulta..." class="form-control" onkeyup="buscarProducto(this.value)">
-                <div class="input-group-append">
-                    <button class="btn btn-info" onclick="limpiarCampos()">Limpiar campos</button>
+    <!-- Botón para abrir el modal de búsqueda -->
+    <button class="btn btn-primary mb-4" data-toggle="modal" data-target="#busquedaProductoModal">Buscar Producto</button>
+
+    <!-- Estadísticas Rápidas -->
+    <div class="mb-4 p-4 bg-light rounded">
+        <div class="row" id="estadisticasInventario">
+            <div class="col-3">
+                <div class="card border-0 shadow-sm stat-card">
+                    <div class="card-body text-center bg-success">
+                        <h2 class="display-4" id="totalProductos"></h2>
+                        <p class="lead">Total de Productos en Sistema</p>
+                    </div>
                 </div>
             </div>
-
-            <!-- Tabla de resultados de búsqueda -->
-            <div class="table-responsive shadow mb-3"> <!-- Agregamos sombra y hacemos la tabla responsive -->
-                <table class="table table-striped" id="tablaResultadosBusqueda" style="display: none;">
-                    <!-- Las filas se cargarán dinámicamente aquí -->
-                </table>
+            <div class="col-3">
+                <div class="card border-0 shadow-sm stat-card">
+                    <div class="card-body text-center bg-success">
+                        <h2 class="display-4" id="productosBajoStock"></h2>
+                        <p class="lead">Productos con Bajo Stock</p>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="col-md-3" id="detalleProducto">
-            <!-- Aquí se mostrarán los detalles del producto de manera dinámica -->
+            <div class="col-3">
+                <div class="card border-0 shadow-sm stat-card">
+                    <div class="card-body text-center bg-success">
+                        <h2 class="display-4" id="ultimoMovimiento"></h2>
+                        <p class="lead">Último Movimiento Registrado</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-3">
+                <div class="card border-0 shadow-sm stat-card">
+                    <div class="card-body text-center bg-success">
+                        <h2 class="display-4" id="movimientosRecientes"></h2>
+                        <p class="lead">Movimientos en los últimos 7 días</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
 
-
-
-
-    <!-- Botones para agregar entradas/salidas -->
+    <!-- Botones de acción rápida -->
     <div class="mb-4">
         <button class="btn btn-success" data-toggle="modal" data-target="#agregarEntradaModal">Agregar Entrada</button>
         <button class="btn btn-danger" data-toggle="modal" data-target="#agregarSalidaModal">Agregar Salida</button>
+        <button class="btn btn-warning" data-toggle="modal" data-target="#exportarInventarioModal">Exportar Inventario</button>
     </div>
 
-    <!-- Tabla de movimientos de inventario -->
-    <table class="table table-striped table-bordered table-hover">
+    <!-- Tabla de Productos en Inventario -->
+    <table class="table table-warning table-hover table-bordered">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Producto</th>
-                <th>Fecha</th>
-                <th>Tipo de Movimiento</th>
-                <th>Cantidad</th>
-                <th>Motivo</th>
-                <th>Acciones</th>
+                <th>Nombre del Producto</th>
+                <th>Stock Inicial</th>
+                <th>Entradas</th>
+                <th>Salidas</th>
+                <th>Stock Actual</th>
             </tr>
         </thead>
-        <tbody id="listaMovimientos">
-            <!-- Los movimientos de inventario se cargarán dinámicamente desde JS -->
+        <tbody id="tablaInventario">
+            <!-- Los datos se cargarán aquí desde el script.js -->
         </tbody>
     </table>
-</div>
 
-<!-- Modal para agregar entrada -->
-<div class="modal fade" id="agregarEntradaModal" tabindex="-1" aria-labelledby="agregarEntradaModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="agregarEntradaModalLabel">Agregar Entrada de Inventario</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <input type="text" id="buscarProductoEntrada" placeholder="Buscar producto..." class="form-control mb-3" onkeyup="buscarProducto(this.value, 'entrada')">
-                <select id="seleccionProductoEntrada" class="form-control mb-3" size="5"></select>
-                <input type="number" id="cantidadEntrada" placeholder="Cantidad" class="form-control mb-3">
-                <textarea id="motivoEntrada" placeholder="Motivo" class="form-control mb-3"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-primary" onclick="agregarEntrada()">Guardar</button>
+    <!-- Modal para la Búsqueda y Resultado de Búsqueda -->
+    <div class="modal fade" id="busquedaProductoModal" tabindex="-1" role="dialog" aria-labelledby="busquedaProductoModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="busquedaProductoModalLabel">Buscar Producto</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group mb-3">
+                        <input type="text" id="busquedaProducto" aria-label="Buscar producto" placeholder="Buscar producto..." class="form-control">
+                        <div class="input-group-append">
+                            <span class="input-group-text">
+                                <i class="fa fa-search"></i>
+                            </span>
+                        </div>
+                    </div>
+                    <select id="resultadosBusqueda" class="form-control custom-select mb-2 d-none" size="5"></select>
+
+                    <small id="searchFeedback" class="form-text text-muted d-none mt-2">Buscando...</small>
+
+                    <div id="infoProducto" class="mt-4">
+                        <h4 class="mb-3"><span id="nombreProducto"></span></h4>
+                        <p><strong>Descripción:</strong> <span id="descripcionProducto"></span></p>
+                        <p><strong>Existencia:</strong> <span id="existenciaProducto"></span></p>
+                        <p><strong>Precio:</strong>Q <span id="precioProducto"></span></p>
+                        <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<!-- Modal para agregar salida -->
-<div class="modal fade" id="agregarSalidaModal" tabindex="-1" aria-labelledby="agregarSalidaModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="agregarSalidaModalLabel">Agregar Salida de Inventario</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <select class="form-control mb-3" id="buscarYSeleccionarProductoSalida"></select>
-                <input type="number" id="cantidadSalida" placeholder="Cantidad" class="form-control mb-3">
-                <textarea id="motivoSalida" placeholder="Motivo" class="form-control mb-3"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                <button type="button" class="btn btn-warning" onclick="agregarSalida()">Guardar</button>
+    <!-- Modal para "Agregar Entrada" -->
+    <div class="modal fade" id="agregarEntradaModal" tabindex="-1" role="dialog" aria-labelledby="agregarEntradaModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="agregarEntradaModalLabel">Agregar Entrada</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgregarEntrada">
+                        <div class="form-group">
+                            <label for="productoEntrada">Producto</label>
+                            <select class="form-control" id="productoEntrada" required>
+                                <!-- Opciones dinámicas cargadas desde la base de datos -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidadEntrada">Cantidad</label>
+                            <input type="number" class="form-control" id="cantidadEntrada" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="motivoEntrada">Motivo</label>
+                            <textarea class="form-control" id="motivoEntrada" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" onclick="guardarEntrada()">Guardar Entrada</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script src="modulos/inventario/script.js"></script>
+    <!-- Modal para "Agregar Salida" -->
+    <div class="modal fade" id="agregarSalidaModal" tabindex="-1" role="dialog" aria-labelledby="agregarSalidaModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="agregarSalidaModalLabel">Agregar Salida</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="formAgregarSalida">
+                        <div class="form-group">
+                            <label for="productoSalida">Producto</label>
+                            <select class="form-control" id="productoSalida" required>
+                                <!-- Opciones dinámicas cargadas desde la base de datos -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="cantidadSalida">Cantidad</label>
+                            <input type="number" class="form-control" id="cantidadSalida" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="motivoSalida">Motivo</label>
+                            <textarea class="form-control" id="motivoSalida" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-danger" onclick="guardarSalida()">Guardar Salida</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script -->
+    <script src="modulos/inventario/script.js"></script>
+</div>

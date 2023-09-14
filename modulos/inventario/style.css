@@ -1,0 +1,34 @@
+/* Estilo para las tarjetas */
+.card.stat-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.card.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+}
+
+/* Estilo para el título de las estadísticas */
+.display-4 {
+  font-weight: bolder;
+  font-size: 45px;
+  color: white;
+}
+
+/* Estilo para la descripción */
+.lead {
+  font-size: 1.25rem;
+  line-height: normal;
+  color: white;
+}
+
+#resultadosBusqueda {
+    margin-top: -1.1rem;
+}
+
+.custom-select:focus {
+    border-color: #80bdff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
