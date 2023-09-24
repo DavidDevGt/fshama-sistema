@@ -48,29 +48,37 @@ if (isset($_POST['fnc'])) {
             break;
 
 
-        case 'agregarEntrada':
+        case 'agregarMovimiento':
+
+            // Verificamos si todos los datos necesarios están presentes
+            if (!isset($_POST['id_producto'], $_POST['cantidad'], $_POST['motivo'], $_POST['tipo_movimiento'])) {
+                echo "0|Faltan datos.";
+                exit;
+            }
+
             $id_producto = $_POST['id_producto'];
             $cantidad = $_POST['cantidad'];
             $motivo = $_POST['motivo'];
-            $query = "INSERT INTO inventario (id_producto, fecha, tipo_movimiento, cantidad, motivo) VALUES ('$id_producto', NOW(), 'Entrada', '$cantidad', '$motivo')";
-            if (dbQuery($query)) {
-                echo '1|Entrada agregada correctamente.';
-            } else {
-                echo '0|Error al agregar entrada.';
+            $tipo_movimiento = $_POST['tipo_movimiento']; // 'Entrada' o 'Salida'
+
+            // Valida que los datos sean del tipo y formato esperado
+            if (!is_numeric($id_producto) || !is_numeric($cantidad) || !in_array($tipo_movimiento, ['Entrada', 'Salida'])) {
+                echo "0|Datos inválidos.";
+                exit;
             }
+
+            $query = "INSERT INTO inventario (id_producto, fecha, tipo_movimiento, cantidad, motivo) 
+                               VALUES ($id_producto, NOW(), '$tipo_movimiento', $cantidad, '$motivo')";
+            $result = dbQuery($query);
+
+            if ($result) {
+                echo "1|{$tipo_movimiento} agregada correctamente.";
+            } else {
+                echo "0|Error al agregar {$tipo_movimiento}.";
+            }
+
             break;
 
-        case 'agregarSalida':
-            $id_producto = $_POST['id_producto'];
-            $cantidad = $_POST['cantidad'];
-            $motivo = $_POST['motivo'];
-            $query = "INSERT INTO inventario (id_producto, fecha, tipo_movimiento, cantidad, motivo) VALUES ('$id_producto', NOW(), 'Salida', '$cantidad', '$motivo')";
-            if (dbQuery($query)) {
-                echo '1|Salida agregada correctamente.';
-            } else {
-                echo '0|Error al agregar salida.';
-            }
-            break;
 
         case 'obtenerProductosConMovimientos':
             $productos = obtenerProductosConMovimientos();
@@ -81,8 +89,6 @@ if (isset($_POST['fnc'])) {
         case "obtenerEstadisticas":
             echo json_encode(obtenerEstadisticas());
             break;
-
-            // Aquí podrías agregar más casos de uso según las necesidades de tu aplicación.
 
         default:
             echo '0|Función no reconocida.';

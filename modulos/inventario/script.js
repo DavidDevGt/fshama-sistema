@@ -51,74 +51,126 @@ const cargarEstadisticas = () => {
 };
 
 $(document).ready(function () {
-  // Función para buscar un producto.
-  function buscarProducto(query) {
-    if (query.length > 2) {
-      $("#searchFeedback").removeClass("d-none").text("Buscando...");
-      $.ajax({
-        type: "POST",
-        url: "modulos/inventario/ajax.php",
-        data: {
-          fnc: "buscarProducto",
-          producto: query,
-        },
-        dataType: "json",
-        success: function (response) {
-          $("#resultadosBusqueda").empty(); // Limpiar resultados anteriores
-          if (response && response.length > 0) {
-            $("#resultadosBusqueda").removeClass("d-none");
-            response.forEach((producto) => {
-              let option = $("<option>")
-                .text(producto.nombre_producto)
-                .val(JSON.stringify(producto)); // Guardamos todo el objeto del producto como string
-              $("#resultadosBusqueda").append(option);
-            });
-          } else {
-            $("#resultadosBusqueda").addClass("d-none");
-            $("#nombreProducto").text("No encontrado");
-            $(
-              "#descripcionProducto, #existenciaProducto, #precioProducto, #categoriaProducto"
-            ).text("");
-          }
-          $("#searchFeedback").addClass("d-none");
-        },
-        error: function () {
-          $("#searchFeedback")
-            .removeClass("d-none")
-            .text("Error en la búsqueda. Intente de nuevo.");
-        },
-      });
-    } else {
-      $("#searchFeedback").addClass("d-none");
-    }
-  }
-
-  // Escuchar el evento keyup del input de búsqueda.
-  $("#busquedaProducto").on("keyup", function () {
+  // Búsqueda para Entrada
+  $("#buscarProductoEntrada").on("keyup", function () {
     let query = $(this).val();
-    buscarProducto(query);
+    if (query.length >= 3) {
+      $.post(
+        "modulos/inventario/ajax.php",
+        { fnc: "buscarProducto", producto: query },
+        function (respuesta) {
+          console.log(respuesta);
+          let productos = JSON.parse(respuesta);
+          let opciones = "";
+          productos.forEach((producto) => {
+            opciones += `<option value="${producto.id_producto}">${producto.nombre_producto}</option>`;
+          });
+          $("#productoEntrada").html(opciones);
+        }
+      );
+    }
+  });
+
+  // Búsqueda para Salida
+  $("#buscarProductoSalida").on("keyup", function () {
+    let query = $(this).val();
+    if (query.length >= 3) {
+      $.post(
+        "modulos/inventario/ajax.php",
+        { fnc: "buscarProducto", producto: query },
+        function (respuesta) {
+          console.log(respuesta);
+          let productos = JSON.parse(respuesta);
+          let opciones = "";
+          productos.forEach((producto) => {
+            opciones += `<option value="${producto.id_producto}">${producto.nombre_producto}</option>`;
+          });
+          $("#productoSalida").html(opciones);
+        }
+      );
+    }
   });
 });
 
-$("#resultadosBusqueda").on("change", function () {
-  let productoSeleccionado = JSON.parse($(this).val()); // Convertimos el string a objeto
+const guardarMovimiento = (tipo) => {
+  console.log("Tipo de movimiento:", tipo);
 
-  $("#nombreProducto").text(
-    productoSeleccionado.nombre_producto || "Desconocido"
-  );
-  $("#descripcionProducto").text(
-    productoSeleccionado.descripcion || "Desconocido"
-  );
-  $("#existenciaProducto").text(
-    productoSeleccionado.stock_actual || "Desconocido"
-  );
-  $("#precioProducto").text(productoSeleccionado.precio_venta || "Desconocido");
-  $("#categoriaProducto").text(productoSeleccionado.id_categoria || "Desconocida");
-});
+  let id_producto = $(`#producto${tipo}`).val();
+  let cantidad = $(`#cantidad${tipo}`).val();
+  let motivo = $(`#motivo${tipo}`).val();
+  console.log("Elemento seleccionado:", $(`#producto${tipo}`));
+  console.log("ID del producto seleccionado:", id_producto); // Agregar esto
 
-$("#busquedaProductoModal").on('hidden.bs.modal', function () {
-  $("#busquedaProducto").val('');  // Limpiamos el campo de búsqueda
-  $("#nombreProducto, #descripcionProducto, #existenciaProducto, #precioProducto, #categoriaProducto").text(''); // Limpiamos los detalles del producto
-  $("#resultadosBusqueda").empty().addClass('d-none');  // Limpiamos las opciones y ocultamos el select
-  $("#searchFeedback").addClass("d-none");
-});
+  // Validaciones básicas antes de enviar los datos
+  if (!id_producto || isNaN(id_producto) || id_producto <= 0) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "ID de producto inválido.",
+    });
+    return;
+  }
+
+  if (!cantidad || isNaN(cantidad) || cantidad <= 0) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Cantidad inválida.",
+    });
+    return;
+  }
+
+  if (!motivo) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Motivo no puede estar vacío.",
+    });
+    return;
+  }
+
+  if (!["Entrada", "Salida"].includes(tipo)) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text: "Tipo de movimiento inválido.",
+    });
+    return;
+  }
+
+  $.ajax({
+    url: "modulos/inventario/ajax.php",
+    method: "POST",
+    data: {
+      fnc: "agregarMovimiento",
+      id_producto: id_producto,
+      cantidad: cantidad,
+      motivo: motivo,
+      tipo_movimiento: tipo,
+    },
+    success: function (respuesta) {
+      console.log("Respuesta del servidor al guardar movimiento:", respuesta);
+
+      let result = respuesta.split("|");
+      if (result[0] === "1") {
+        Swal.fire({
+          icon: "success",
+          title: "Hecho",
+          text: result[1],
+        });
+        cargarInventario();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result[1],
+        });
+      }
+    },
+    error: function (xhr, status, error) {
+      console.log("XHR:", xhr);
+      console.log("Estado:", status);
+      console.error("Error en la solicitud AJAX: ", error);
+    },
+  });
+};

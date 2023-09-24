@@ -4,9 +4,6 @@
     <!-- Título -->
     <h1 class="mb-4">Gestión de Inventario</h1>
 
-    <!-- Botón para abrir el modal de búsqueda -->
-    <button class="btn btn-primary mb-4" data-toggle="modal" data-target="#busquedaProductoModal">Buscar Producto</button>
-
     <!-- Estadísticas Rápidas -->
     <div class="mb-4 p-4 bg-light rounded">
         <div class="row" id="estadisticasInventario">
@@ -69,45 +66,6 @@
         </tbody>
     </table>
 
-    <!-- Modal para la Búsqueda y Resultado de Búsqueda -->
-    <div class="modal fade" id="busquedaProductoModal" tabindex="-1" role="dialog" aria-labelledby="busquedaProductoModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="busquedaProductoModalLabel">Buscar Producto</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="input-group mb-3">
-                        <input type="text" id="busquedaProducto" aria-label="Buscar producto" placeholder="Buscar producto..." class="form-control">
-                        <div class="input-group-append">
-                            <span class="input-group-text">
-                                <i class="fa fa-search"></i>
-                            </span>
-                        </div>
-                    </div>
-                    <select id="resultadosBusqueda" class="form-control custom-select mb-2 d-none" size="5"></select>
-
-                    <small id="searchFeedback" class="form-text text-muted d-none mt-2">Buscando...</small>
-
-                    <div id="infoProducto" class="mt-4">
-                        <h4 class="mb-3"><span id="nombreProducto"></span></h4>
-                        <p><strong>Descripción:</strong> <span id="descripcionProducto"></span></p>
-                        <p><strong>Existencia:</strong> <span id="existenciaProducto"></span></p>
-                        <p><strong>Precio:</strong>Q <span id="precioProducto"></span></p>
-                        <p><strong>Categoría:</strong> <span id="categoriaProducto"></span></p>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
     <!-- Modal para "Agregar Entrada" -->
     <div class="modal fade" id="agregarEntradaModal" tabindex="-1" role="dialog" aria-labelledby="agregarEntradaModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -122,9 +80,13 @@
                     <form id="formAgregarEntrada">
                         <div class="form-group">
                             <label for="productoEntrada">Producto</label>
+                            <input type="text" class="form-control mb-2" id="buscarProductoEntrada" placeholder="Buscar producto...">
                             <select class="form-control" id="productoEntrada" required>
+                                <option value="">Seleccione un producto</option>
+
                                 <!-- Opciones dinámicas cargadas desde la base de datos -->
                             </select>
+
                         </div>
                         <div class="form-group">
                             <label for="cantidadEntrada">Cantidad</label>
@@ -138,7 +100,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-success" onclick="guardarEntrada()">Guardar Entrada</button>
+                    <button type="button" class="btn btn-success" onclick="guardarMovimiento('Entrada')">Guardar Entrada</button>
+
                 </div>
             </div>
         </div>
@@ -158,9 +121,13 @@
                     <form id="formAgregarSalida">
                         <div class="form-group">
                             <label for="productoSalida">Producto</label>
+                            <input type="text" class="form-control mb-2" id="buscarProductoSalida" placeholder="Buscar producto...">
                             <select class="form-control" id="productoSalida" required>
+                                <option value="">Seleccione un producto</option>
+
                                 <!-- Opciones dinámicas cargadas desde la base de datos -->
                             </select>
+
                         </div>
                         <div class="form-group">
                             <label for="cantidadSalida">Cantidad</label>
@@ -174,7 +141,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-danger" onclick="guardarSalida()">Guardar Salida</button>
+                    <button type="button" class="btn btn-danger" onclick="guardarMovimiento('Salida')">Guardar Salida</button>
                 </div>
             </div>
         </div>
