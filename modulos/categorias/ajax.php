@@ -11,7 +11,7 @@ if (isset($_POST['fnc'])) {
 
     switch ($op) {
         case "mostrar_categorias":
-            $query = "SELECT * FROM categorias ORDER BY id_categoria";
+            $query = "SELECT * FROM categorias WHERE active = 1 ORDER BY id_categoria";
 
             $result = dbQuery($query);
 
@@ -74,5 +74,3 @@ if (isset($_POST['fnc'])) {
             break;
     }
 }
-
-?>

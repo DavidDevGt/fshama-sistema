@@ -10,7 +10,7 @@ if (isset($_POST['fnc'])) {
 
     switch ($op) {
         case 'obtenerProductos':
-            $query = "SELECT * FROM inventario";
+            $query = "SELECT * FROM inventario WHERE active = 1";
             $result = dbQuery($query);
             if ($result) {
                 $productos = array();

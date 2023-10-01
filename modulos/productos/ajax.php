@@ -51,7 +51,7 @@ if (isset($_POST['fnc'])) {
         case "eliminar_producto":
             $id = $_POST['id_producto'];
 
-            $query = "DELETE FROM productos WHERE id_producto=$id";
+            $query = "UPDATE productos SET active=0 WHERE id_producto=$id";
 
             if (dbQuery($query)) {
                 echo '1|Producto eliminado correctamente';
@@ -63,6 +63,7 @@ if (isset($_POST['fnc'])) {
         case "mostrar_productos":
             $query = "SELECT p.*, c.nombre_categoria AS nombre_categoria FROM productos p
             LEFT JOIN categorias c ON p.id_categoria = c.id_categoria
+            #WHERE active = 1
             ORDER BY p.id_producto";
             $result = dbQuery($query);
 
@@ -79,7 +80,7 @@ if (isset($_POST['fnc'])) {
 
         case "mostrar_producto":
             $id = $_POST['id_producto'];
-            $query = "SELECT * FROM productos WHERE id_producto=$id";
+            $query = "SELECT * FROM productos WHERE id_producto=$id AND active=1";
             $result = dbQuery($query);
 
             if (mysqli_num_rows($result) > 0) {
@@ -123,7 +124,7 @@ if (isset($_POST['fnc'])) {
 
         case "buscar_producto":
             $consulta = $_POST['consulta'];
-            $query = "SELECT * FROM productos WHERE nombre_producto LIKE '%$consulta%'";
+            $query = "SELECT * FROM productos WHERE active=1 AND nombre_producto LIKE '%$consulta%'";
             $result = dbQuery($query);
 
             if (mysqli_num_rows($result) > 0) {
