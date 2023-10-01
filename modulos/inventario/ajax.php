@@ -9,6 +9,37 @@ if (isset($_POST['fnc'])) {
     $op = $_POST['fnc'];
 
     switch ($op) {
+        case 'obtenerMovimientos':
+            $tipo = isset($_POST['tipo']) ? $_POST['tipo'] : null;
+            $query = isset($_POST['query']) ? $_POST['query'] : "";
+
+            $sql = "SELECT inventario.*, productos.nombre_producto FROM inventario 
+            JOIN productos ON inventario.id_producto = productos.id_producto 
+            WHERE inventario.active = 1";
+            if ($tipo) {
+                $sql .= " AND tipo_movimiento = '$tipo'";
+            }
+            if ($query) {
+                $sql .= " AND nombre_producto LIKE '%$query%'";
+            }
+
+            $result = dbQuery($sql);
+            $movimientos = [];
+            while ($row = dbFetchAssoc($result)) {
+                $movimientos[] = $row;
+            }
+            echo json_encode($movimientos);
+            break;
+
+        case 'eliminarMovimiento':
+            $idMovimiento = $_POST['idMovimiento'];
+            if (eliminarMovimiento($idMovimiento)) {
+                echo "1|Movimiento eliminado correctamente.";
+            } else {
+                echo "0|Error al eliminar movimiento.";
+            }
+            break;
+
         case 'obtenerProductos':
             $query = "SELECT * FROM inventario WHERE active = 1";
             $result = dbQuery($query);
@@ -107,14 +138,14 @@ function obtenerProductosConMovimientos()
         $productos[$row['id_producto']] = [
             'id_producto' => $row['id_producto'],
             'nombre' => $row['nombre'],
-            'stock_inicial' => $row['stock_actual'],  // Asumimos que el stock_actual es el stock inicial
+            'stock_inicial' => $row['stock_actual'],
             'stock_actual' => $row['stock_actual'],
             'movimientos' => []
         ];
     }
 
-    // Consulta todos los movimientos
-    $queryMovimientos = "SELECT id_producto, tipo_movimiento, cantidad FROM inventario";
+    // Consulta todos los movimientos que están activos
+    $queryMovimientos = "SELECT id_producto, tipo_movimiento, cantidad FROM inventario WHERE active = 1";
     $resultMovimientos = dbQuery($queryMovimientos);
 
     while ($rowMovimiento = dbFetchAssoc($resultMovimientos)) {
@@ -148,16 +179,24 @@ function obtenerEstadisticas()
     $result = dbQuery($query);
     $stats['productosBajoStock'] = dbFetchAssoc($result)['productosBajoStock'];
 
-    // Último movimiento
-    $query = "SELECT tipo_movimiento FROM inventario ORDER BY fecha DESC LIMIT 1";
+    // Último movimiento activo
+    $query = "SELECT tipo_movimiento FROM inventario WHERE active = 1 ORDER BY fecha DESC LIMIT 1";
     $result = dbQuery($query);
     $ultimoMov = dbFetchAssoc($result);
     $stats['ultimoMovimiento'] = $ultimoMov ? $ultimoMov['tipo_movimiento'] : 'Ninguno';
 
-    // Movimientos en los últimos 7 días
-    $query = "SELECT COUNT(*) as movimientosRecientes FROM inventario WHERE fecha >= CURDATE() - INTERVAL 7 DAY";
+    // Movimientos en los últimos 7 días que están activos
+    $query = "SELECT COUNT(*) as movimientosRecientes FROM inventario WHERE active = 1 AND fecha >= CURDATE() - INTERVAL 7 DAY";
     $result = dbQuery($query);
     $stats['movimientosRecientes'] = dbFetchAssoc($result)['movimientosRecientes'];
 
     return $stats;
+}
+
+function eliminarMovimiento($idMovimiento)
+{
+    // Aquí, en lugar de eliminar el registro, vamos a marcarlo como inactivo (soft delete)
+    $query = "UPDATE inventario SET active = 0 WHERE id_inventario = $idMovimiento";
+    $result = dbQuery($query);
+    return $result;
 }

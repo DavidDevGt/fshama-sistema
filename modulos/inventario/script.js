@@ -16,10 +16,10 @@ const cargarInventario = () => {
       productos.forEach((producto) => {
         const entradas = producto.movimientos
           .filter((m) => m.tipo_movimiento === "Entrada")
-          .reduce((acc, movimiento) => acc + movimiento.cantidad, 0);
+          .reduce((acc, movimiento) => acc + Number(movimiento.cantidad), 0);
         const salidas = producto.movimientos
           .filter((m) => m.tipo_movimiento === "Salida")
-          .reduce((acc, movimiento) => acc + movimiento.cantidad, 0);
+          .reduce((acc, movimiento) => acc + Number(movimiento.cantidad), 0);
 
         html += `
               <tr>
@@ -157,6 +157,18 @@ const guardarMovimiento = (tipo) => {
           icon: "success",
           title: "Hecho",
           text: result[1],
+        }).then(() => {
+          // Limpiar los campos del modal
+          $(`#producto${tipo}`).val("");
+          $(`#cantidad${tipo}`).val("");
+          $(`#motivo${tipo}`).val("");
+
+          // Cerrar el modal correspondiente
+          if (tipo === "Entrada") {
+            $("#agregarEntradaModal").modal("hide");
+          } else if (tipo === "Salida") {
+            $("#agregarSalidaModal").modal("hide");
+          }
         });
         cargarInventario();
       } else {
@@ -174,3 +186,72 @@ const guardarMovimiento = (tipo) => {
     },
   });
 };
+
+$(document).ready(function () {
+  // Al hacer clic en el botón "Manipular Inv."
+  $("button[data-target='#manipularInventarioModal']").on("click", function () {
+    Swal.fire({
+      title: "¿Qué deseas manipular?",
+      showDenyButton: true,
+      confirmButtonText: `Entradas`,
+      denyButtonText: `Salidas`,
+    }).then((result) => {
+      if (result.isConfirmed) {
+        cargarMovimientos("Entrada");
+      } else if (result.isDenied) {
+        cargarMovimientos("Salida");
+      }
+    });
+  });
+
+  // Búsqueda AJAX
+  $("#buscarMovimiento").on("keyup", function () {
+    let query = $(this).val();
+    cargarMovimientos(null, query);
+  });
+});
+
+function cargarMovimientos(tipo, query = "") {
+  $.post(
+    "modulos/inventario/ajax.php",
+    { fnc: "obtenerMovimientos", tipo: tipo, query: query },
+    function (respuesta) {
+      let movimientos = JSON.parse(respuesta);
+      let html = "";
+      movimientos.forEach((movimiento) => {
+        html += `
+                  <tr>
+                      <td>${movimiento.nombre_producto}</td>
+                      <td>${movimiento.cantidad}</td>
+                      <td>${movimiento.tipo_movimiento}</td>
+                      <td><button class="btn btn-danger btn-sm" onclick="eliminarMovimiento(${movimiento.id_inventario})">Eliminar</button></td>
+                  </tr>`;
+      });
+      $("#tablaMovimientos").html(html);
+    }
+  );
+}
+
+function eliminarMovimiento(idMovimiento) {
+  $.post(
+    "modulos/inventario/ajax.php",
+    { fnc: "eliminarMovimiento", idMovimiento: idMovimiento },
+    function (respuesta) {
+      let result = respuesta.split("|");
+      if (result[0] === "1") {
+        Swal.fire({
+          icon: "success",
+          title: "Hecho",
+          text: result[1],
+        });
+        cargarMovimientos();
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: result[1],
+        });
+      }
+    }
+  );
+}

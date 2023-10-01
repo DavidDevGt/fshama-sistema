@@ -48,6 +48,7 @@
         <button class="btn btn-success" data-toggle="modal" data-target="#agregarEntradaModal">Agregar Entrada</button>
         <button class="btn btn-danger" data-toggle="modal" data-target="#agregarSalidaModal">Agregar Salida</button>
         <button class="btn btn-warning" data-toggle="modal" data-target="#exportarInventarioModal">Exportar Inventario</button>
+        <button class="btn btn-primary" data-toggle="modal" data-target="#manipularInventarioModal">Manipular Inv.</button>
     </div>
 
     <!-- Tabla de Productos en Inventario -->
@@ -65,6 +66,37 @@
             <!-- Los datos se cargarán aquí desde el script.js -->
         </tbody>
     </table>
+
+    <!-- Modal para "Manipular Inventario" -->
+    <div class="modal fade" id="manipularInventarioModal" tabindex="-1" role="dialog" aria-labelledby="manipularInventarioModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="manipularInventarioModalLabel">Manipular Inventario</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control mb-3" id="buscarMovimiento" placeholder="Buscar producto...">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Cantidad</th>
+                                <th>Tipo</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaMovimientos">
+                            <!-- Los datos se cargarán aquí desde el script.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal para "Agregar Entrada" -->
     <div class="modal fade" id="agregarEntradaModal" tabindex="-1" role="dialog" aria-labelledby="agregarEntradaModalLabel" aria-hidden="true">
