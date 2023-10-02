@@ -41,6 +41,8 @@ const cargarEstadisticas = () => {
     "modulos/inventario/ajax.php",
     { fnc: "obtenerEstadisticas" },
     (respuesta) => {
+      console.log("Respuesta de obtenerEstadisticas:", respuesta); // Agregar esta línea
+
       const stats = JSON.parse(respuesta);
       $("#totalProductos").text(stats.totalProductos);
       $("#movimientosRecientes").text(stats.movimientosRecientes);

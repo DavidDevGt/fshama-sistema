@@ -175,7 +175,7 @@ function obtenerEstadisticas()
     $stats['totalProductos'] = dbFetchAssoc($result)['totalProductos'];
 
     // Productos bajo stock (ejemplo: menos de 5)
-    $query = "SELECT COUNT(*) as productosBajoStock FROM productos WHERE stock_actual < 5";
+    $query = "SELECT COUNT(*) as productosBajoStock FROM productos WHERE stock_actual < 8";
     $result = dbQuery($query);
     $stats['productosBajoStock'] = dbFetchAssoc($result)['productosBajoStock'];
 
